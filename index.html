@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebPageAnalyser</title>
+  <meta charset="utf-8">
+  <meta name="description" content="WebPageAnalyser">
+  <meta name="author" content="AM">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>WebPageAnalyser</h1>
+    <h2>Coursera. Developing Data Products.</h2>
+    <p>AM<br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <article data-timings="">
+    <!-- Limit image width and height -->
+
+<style type='text/css'>
+img {
+    max-height: 400px;
+    max-width: 400px;
+}
+</style>
+
+<h2>Introduction</h2>
+
+<p>WebPageAnalyser is an example of shiny application. It demonstrates web page scraping, parsing HTML and presentation results on graphic. This presentation describes R code used in the application.</p>
+
+<p>WebPageAnalyser based on packages: </p>
+
+<pre><code class="r">library(XML)  # Used to parse HTML code
+library(ggplot2)  # Used to plot grafics 
+library(scales)  # Used to scale grafics
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <hgroup>
+    <h2>Load and parse HTML page</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Code chunk presented below implements web page scraping and parsing HTML content.
+The result is a list of words used in the text on analyzed web page.</p>
+
+<pre><code class="r"># Fetch html page and merge all strings to one.
+web.content &lt;- paste(readLines(&quot;http://news.yahoo.com&quot;), &quot;\n&quot;, collapse = &quot;&quot;)
+# Parse html.
+web.tree &lt;- htmlTreeParse(web.content, asText = TRUE, useInternalNodes = T)
+# Extract text content.
+web.text &lt;- paste(xpathSApply(web.tree, &quot;//p&quot;, xmlValue), &quot; &quot;, collapse = &quot; &quot;)
+# Parse text to create word list.
+web.words &lt;- tolower(unlist(strsplit(web.text, &quot;[ .,;!?\&quot;\\[\\)\\(]&quot;)))
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h2>Processing word list</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Word list obtained above used to builed table with words frequencies. </p>
+
+<pre><code class="r"># Build table with words frequencies.
+web.words.table &lt;- data.frame(table(web.words[nchar(web.words) &gt; 2]), stringsAsFactors = F)
+# Sort table by frequencies
+web.words.table &lt;- web.words.table[order(web.words.table$Freq, decreasing = T), 
+    ]
+# Add word rank to the table
+web.words.table[, 3] &lt;- seq(nrow(web.words.table))
+# Change row and column names
+names(web.words.table) &lt;- c(&quot;Word&quot;, &quot;Freq&quot;, &quot;Rank&quot;)
+rownames(web.words.table) &lt;- NULL
+</code></pre>
+
+<p>The result of this code is a table:</p>
+
+<pre><code>##   Word Freq Rank
+## 1  the   49    1
+## 2  and   16    2
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>Result</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>WebPageAnalyser used ggplot function to build grafic.</p>
+
+<pre><code class="r">ggplot(web.words.table, aes(x = Rank, y = Freq)) + geom_point(size = 3) + xlab(&quot;Rank&quot;) + 
+    ylab(&quot;Freq.&quot;) + theme_bw() + scale_x_log10(breaks = trans_breaks(&quot;log10&quot;, 
+    function(x) 10^x), labels = trans_format(&quot;log10&quot;, math_format(10^.x)))
+</code></pre>
+
+<p><img src="assets/fig/unnamed-chunk-5.png" alt="plot of chunk unnamed-chunk-5"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title=''>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Load and parse HTML page'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Processing word list'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Result'>
+         4
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>
